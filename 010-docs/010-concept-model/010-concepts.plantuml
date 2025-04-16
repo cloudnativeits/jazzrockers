@@ -1,0 +1,245 @@
+@startuml
+' --- Style adjustments for better readability ---
+skinparam class {
+    BackgroundColor White
+    ArrowColor DarkSlateGray
+    BorderColor DarkSlateGray
+    FontName Arial
+}
+
+skinparam note {
+  BackgroundColor LightYellow
+  FontName Arial
+}
+
+
+' --- Classes ---
+
+class Organization {
+    -name : String
+    -brands : List<String>
+}
+
+class Branch {
+    -branchCode : String
+    -location : String
+    -address : String
+}
+
+class Department {
+    -departmentName : String
+}
+
+class Course {
+    -courseCode : String
+    -courseName : String
+    -department : Department
+    -level : String  'e.g., Beginner, Intermediate, Advanced
+     +getCourseFee() : Money
+}
+class CourseFee{
+ -course : Course
+ -frequency : String
+ -amount: Money
+}
+class Student {
+    -studentID : String
+    -firstName : String
+    -lastName : String
+    -dateOfBirth : Date
+    -contactNumber : String
+    -email : String
+    -needsTransportation : boolean
+    +registerForCourse(Course, Batch)
+    +recordPayment(Payment)
+}
+
+
+
+class Batch {
+    -batchCode : String
+    -course : Course
+    -teacher : Teacher
+    -branch : Branch
+     -department: Department
+    -schedule : String 'e.g., "Mon & Thu 5pm-6pm"
+    -startDate : Date
+    -endDate : Date
+    +addStudent(Student)
+}
+
+class Teacher {
+    -employeeID : String
+    -firstName : String
+    -lastName : String
+    -department : Department
+    -specialization : String
+    -salary : Money
+}
+class Admin {
+  -employeeID: String
+ -firstName: String
+  -lastName: String
+  -role: String
+  -salary: Money
+  -branch: Branch
+ }
+
+class Attendance {
+    -student : Student
+    -batch : Batch
+    -date : Date
+    -status : AttendanceStatus
+    -notes : String
+}
+
+enum AttendanceStatus {
+    Present
+    Absent
+    Leave
+    Compensation
+    Cancelled
+    PublicHoliday
+    NotMarked
+}
+
+class Registration {
+    -student : Student
+    -course : Course
+    -registrationDate : Date
+    -registrationFee : Money
+     -transportationFee: Money
+}
+class Payment {
+    -paymentID : String
+    -student : Student
+    -amount : Money
+    -paymentDate : Date
+    -paymentMethod : String
+    -paymentType : PaymentType 'e.g., Registration, Course Fee, Transportation
+    -notes: String
+    -invoice: Invoice
+}
+enum PaymentType{
+  RegistrationFee
+  CourseFee
+  TransportationFee
+  UniformFee
+  BookFee
+  OtherFee
+}
+
+class Invoice {
+    -invoiceNumber : String
+    -student : Student
+    -invoiceDate : Date
+    -dueDate : Date
+    -totalAmount : Money
+    -status : InvoiceStatus
+   -vat: Money
+
+}
+enum InvoiceStatus {
+    Draft
+    Issued
+    Paid
+    Overdue
+    Cancelled
+    Credited
+}
+class InvoiceItem{
+  -invoice : Invoice
+  -description:String
+  -amount:Money
+  -discount: Money
+}
+
+class Discount {
+    -discountCode : String
+    -discountType : DiscountType
+    -discountAmount : Money 'or percentage
+    -validFrom : Date
+    -validTo : Date
+    -description :String
+}
+enum DiscountType {
+  EarlyPayment
+  Affiliate
+  Other
+}
+
+
+class CreditNote {
+  -creditNoteNumber: String
+  -student: Student
+  -issueDate: Date
+  -amount: Money
+  -reason: String
+  -originalInvoice: Invoice
+}
+class Employee {
+    -employeeID : String
+    -firstName : String
+    -lastName : String
+      -role : String
+    -salary : Money
+}
+class SalaryComponent{
+-employee:Employee
+-type: SalaryType
+-amount:Money
+}
+enum SalaryType{
+  BasicSalary
+  Incentive
+  GoogleReview
+  RevenueBased
+}
+
+class SpecialActivity {
+  -activityID: String
+  -activityName: String
+  -description: String
+  -fee: Money
+  -paymentOption: String 'Recurring or Fixed
+}
+class EventRegistration{
+  -student:Student
+  -specialActivity:SpecialActivity
+  -registrationDate:Date
+}
+class EventCostume{
+   -student:Student
+  -specialActivity:SpecialActivity
+  -costumeDescription:String
+  -cost:Money
+}
+
+' --- Relationships ---
+Organization "1" -- "*" Branch : has >
+Organization "1" -- "*" Department : has >
+Branch "1"--"*" Employee : employs >
+Department "1" -- "*" Course : offers >
+Course "1" -- "*" Batch : has >
+Teacher "1" -- "*" Batch : teaches >
+Branch "*" <.left.> "*" Batch: located in
+Student "*" -- "0..*" Batch : enrolled in >
+Batch "*" -- "*" Attendance : tracks >
+Student "1" -- "*" Attendance : has >
+Student "1" -- "1" Registration : has >
+Registration "1" -- "1" Course : for >
+Student "1" -- "*" Payment : makes >
+Payment "1"--"1" Invoice : related
+Invoice "1"--"*" InvoiceItem: contains >
+InvoiceItem "*" -- "0..1" Discount: applies
+Admin -- Branch : manages
+CreditNote "1" -- "1" Student : issued to >
+CreditNote "1" -- "1" Invoice: references >
+Employee <|-- Teacher
+Employee <|-- Admin
+Employee "1" -- "*" SalaryComponent: has >
+CourseFee "1"--"1" Course: for >
+SpecialActivity "1" -- "*" EventRegistration: has
+SpecialActivity "1" -- "*" EventCostume : has
+
+@enduml
