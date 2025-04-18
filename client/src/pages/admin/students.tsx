@@ -186,7 +186,7 @@ export default function AdminStudents() {
     mutationFn: async (data: InsertStudent) => {
       // First create the user account
       const userResponse = await apiRequest("POST", "/api/users", {
-        username: data.username,
+        username: data.email,
         password: data.password,
         role: "student",
         fullName: `${data.firstName} ${data.lastName}`,
@@ -309,7 +309,7 @@ export default function AdminStudents() {
       branch: student.branch || "",
       status: student.status,
       parentId: student.parentId,
-      enrollmentDate: student.enrollmentDate
+      enrollmentDate: student.enrollmentDate,
     });
     setIsEditDialogOpen(true);
   };
@@ -713,7 +713,7 @@ export default function AdminStudents() {
                     </Select>
                   </div>
                   
-                  <div className="space-y-2">
+                  {/* <div className="space-y-2">
                     <Label htmlFor="username">Username</Label>
                     <Input 
                       id="username" 
@@ -725,6 +725,19 @@ export default function AdminStudents() {
                       readOnly
                     />
                     <p className="text-sm text-muted-foreground">Auto-generated from first and last name</p>
+                  </div> */}
+                  <div className="space-y-2">
+                    <Label htmlFor="username">Username</Label>
+                    <Input 
+                      id="username" 
+                      name="username"
+                      value={formData.email ?? ""}
+                      onChange={handleInputChange}
+                      placeholder="Username will be auto-generated" 
+                      required
+                      readOnly
+                    />
+                    <p className="text-sm text-muted-foreground">Auto-generated from email</p>
                   </div>
                   
                   <div className="space-y-2">

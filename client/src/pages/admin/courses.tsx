@@ -187,7 +187,7 @@ export default function AdminCourses() {
     },
     {
       accessorKey: "category",
-      header: "Category",
+      header: "Department",
       cell: ({ row }) => {
         const category = row.getValue("category") as string;
         let badgeClass = "bg-blue-100 text-blue-800";
@@ -207,7 +207,7 @@ export default function AdminCourses() {
     },
       {
         accessorKey: "fee",
-        header: "Fee",
+        header: "Fee (Per month)",
       cell: ({ row }) => (
         <div className="font-mono">{row.getValue("fee")}</div>
       ),
@@ -262,7 +262,7 @@ export default function AdminCourses() {
     },
     {
       accessorKey: "category",
-      header: "Category",
+      header: "Department",
     },
     {
       accessorKey: "teacherId",
@@ -744,9 +744,10 @@ export default function AdminCourses() {
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
         <TabsList>
+          <TabsTrigger value="departments">Departments</TabsTrigger>
+          <TabsTrigger value="branches">Branches</TabsTrigger>
           <TabsTrigger value="courses">Courses</TabsTrigger>
           <TabsTrigger value="batches">Batches</TabsTrigger>
-          <TabsTrigger value="branches">Branches</TabsTrigger>
         </TabsList>
         
         <TabsContent value="courses" className="mt-6">
@@ -827,14 +828,14 @@ export default function AdminCourses() {
                   name="category"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Category</FormLabel>
+                      <FormLabel>Department</FormLabel>
                       <Select 
                         onValueChange={field.onChange} 
                         defaultValue={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select category" />
+                            <SelectValue placeholder="Select department" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -854,7 +855,7 @@ export default function AdminCourses() {
                   name="fee"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Fee</FormLabel>
+                      <FormLabel>Fee (Per month)</FormLabel>
                       <FormControl>
                         <Input 
                           type="number" 
@@ -1129,11 +1130,11 @@ export default function AdminCourses() {
                   name="category"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Category</FormLabel>
+                      <FormLabel>Department</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select category" />
+                            <SelectValue placeholder="Select department" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -1243,7 +1244,7 @@ export default function AdminCourses() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. alnahda@jazzrockers.com" {...field} />
+                      <Input placeholder="e.g. alnahda@jazzrockers.com" {...field} value={field.value ?? ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -1257,7 +1258,7 @@ export default function AdminCourses() {
                   <FormItem>
                     <FormLabel>Manager</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. John Doe" {...field} />
+                      <Input placeholder="e.g. John Doe" {...field} value={field.value ?? ""}/>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -1344,14 +1345,14 @@ export default function AdminCourses() {
                   name="category"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Category</FormLabel>
+                      <FormLabel>Department</FormLabel>
                       <Select 
                         onValueChange={field.onChange} 
                         defaultValue={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select category" />
+                            <SelectValue placeholder="Select department" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -1370,7 +1371,7 @@ export default function AdminCourses() {
                   name="fee"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Fee (₹)</FormLabel>
+                      <FormLabel>Fee (Per month)</FormLabel>
                       <FormControl>
                         <Input 
                           type="number" 
@@ -1496,7 +1497,7 @@ export default function AdminCourses() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. alnahda@jazzrockers.com" {...field} />
+                      <Input placeholder="e.g. alnahda@jazzrockers.com" {...field} value={field.value ?? ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -1510,7 +1511,7 @@ export default function AdminCourses() {
                   <FormItem>
                     <FormLabel>Manager</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. John Doe" {...field} />
+                      <Input placeholder="e.g. John Doe" {...field} value={field.value ?? ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

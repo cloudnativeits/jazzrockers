@@ -365,6 +365,9 @@ export class MemStorage implements IStorage {
       userId: student.userId ?? null,
       password: student.password ?? null,
       status: student.status ?? "active",
+      course: student.course,
+      batch: student.batch,
+    enrollmentDate: student.enrollmentDate,
     };
     this.studentsMap.set(id, newStudent);
     return newStudent;

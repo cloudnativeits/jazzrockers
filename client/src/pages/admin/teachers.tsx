@@ -137,7 +137,7 @@ export default function AdminTeachers() {
     },
     {
       accessorKey: "salary",
-      header: "Salary",
+      header: "Basic Salary",
       cell: ({ row }) => {
         return formatSalaryWithoutSymbol(Number(row.original.salary));
       },
@@ -462,7 +462,7 @@ export default function AdminTeachers() {
                       <div className="flex items-start">
                         <BadgeIndianRupee className="h-4 w-4 text-muted-foreground mt-0.5 mr-2" />
                         <div>
-                          <p className="text-sm font-medium">Salary</p>
+                          <p className="text-sm font-medium">Basic Salary</p>
                           <p className="text-sm text-muted-foreground">
                             {formatCurrency(Number(selectedTeacher.salary))} per month
                           </p>
@@ -646,7 +646,7 @@ export default function AdminTeachers() {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="salary">Salary</Label>
+                    <Label htmlFor="salary">Basic Salary</Label>
                     <Input 
                       id="salary" 
                       name="salary"
