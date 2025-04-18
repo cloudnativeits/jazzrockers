@@ -128,6 +128,8 @@ export const insertStudentSchema = createInsertSchema(students).pick({
   address: true,
   phone: true,
   email: true,
+  course: true,
+  batch: true,
   branch: true,
   enrollmentDate: true,
   status: true,
