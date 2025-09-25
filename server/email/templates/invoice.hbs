@@ -1,0 +1,199 @@
+{{!-- <html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Invoice</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f3f4f6;
+    }
+
+    .container {
+      background: #fff;
+      padding: 30px;
+      max-width: 800px;
+      margin: auto;
+      border-radius: 6px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    }
+
+    img.header {
+      width: 100%;
+      max-width: 600px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+
+    img.footer {
+      width: 100%;
+      max-width: 600px;
+      height: auto;
+      display: block;
+      margin: 20px auto 0;
+    }
+
+    h1 {
+      text-align: center;
+      color: #303d87;
+      margin-bottom: 20px;
+    }
+
+    .grid {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 30px;
+    }
+
+    .bill-to {
+      font-weight: bold;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+    }
+
+    th,
+    td {
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
+
+    th {
+      background: #303d87;
+      color: white;
+      text-align: left;
+    }
+
+    .summary {
+      text-align: right;
+    }
+
+    .summary div {
+      margin-bottom: 8px;
+    }
+
+    .summary .grand-total {
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .notes {
+      margin-top: 20px;
+      font-style: italic;
+      color: #444;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header-container" style="margin-bottom: 30px; text-align: center;">
+      <img src="{{{headerImageDataUrl}}}" alt="Letterhead" class="header" />
+    </div>
+
+    <h1>TAX INVOICE</h1>
+
+    <div class="grid">
+      <div>
+        <p class="bill-to">BILL TO:</p>
+        <p>{{billTo.name}}</p>
+        <p>{{billTo.address}}</p>
+      </div>
+      <div>
+        <p><strong>INVOICE NO:</strong> {{invoiceNumber}}</p>
+        <p><strong>ISSUE DATE:</strong> {{issueDate}}</p>
+        <p><strong>PAYMENT METHOD:</strong> {{paymentMethod}}</p>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>SI NO</th>
+          <th>ITEM/DESCRIPTION</th>
+          <th>QTY</th>
+          <th>PRICE</th>
+          <th>DISCOUNT</th>
+          <th>LINE TOTAL</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each lineItems}}
+        <tr>
+          <td>{{si_no}}</td>
+          <td>{{description}}</td>
+          <td style="text-align:center;">{{quantity}}</td>
+          <td style="text-align:right;">{{price}}</td>
+          <td style="text-align:right;">
+            {{#if (eq discountType "percentage")}}{{discount}}%{{else}}{{discount}}{{/if}}
+          </td>
+          <td style="text-align:right;">{{lineTotal}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+
+    <div class="summary">
+      <div><strong>TOTAL PRICE:</strong> {{summary.totalPrice}}</div>
+      <div><strong style="color:red;">DISCOUNT:</strong> - {{summary.discount}}</div>
+      <div><strong>VAT INCLUSIVE:</strong> {{summary.vatAmount}}</div>
+      <div class="grand-total"><strong>GRAND TOTAL:</strong> {{summary.grandTotal}}</div>
+    </div>
+
+    {{#if remarks}}
+    <div class="notes">
+      Notes: {{remarks}}
+    </div>
+    {{/if}}
+
+    <div class="footer-container" style="margin-top: 30px; text-align: center;">
+      <img src="{{{footerImageDataUrl}}}" alt="Letterhead" class="footer" />
+    </div>
+  </div>
+</body>
+
+</html> --}}
+
+
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Invoice - {{invoiceNumber}}</title>
+</head>
+
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px;">
+  <div
+    style="max-width: 800px; margin: auto; background: #fff; border-radius: 6px; box-shadow: 0 0 10px rgba(0,0,0,0.1); overflow: hidden;">
+    <div style="padding: 20px; box-sizing: border-box;">
+      <h2 style="margin-top: 0; color: #333;">Invoice - {{invoiceNumber}}</h2>
+      <p>Dear Parent,</p>
+
+      <p>Greetings from Jazzrockers! </p>
+
+      <p>We hope you and your family are doing well.</p>
+
+      <p>This is a kind reminder that the invoice for your child’s monthly course fee has been
+        generated and is now available on the Student Management Portal. You may log in to
+        review or download the invoice at your convenience.</p>
+
+      <p>We kindly request you to complete the payment on or before the 10th of this month to
+        avoid any late fees or service interruptions.</p>
+
+      <p>Should you have any questions or require assistance with the portal, please feel free to
+        reach out to +971 800 509 or contact@jazzrockers.com.</p>
+
+      <p>Thank you for your continued support and cooperation.</p>
+
+      <p>Warm Regards,<br /><br />Jazzrockers</p>
+    </div>
+  </div>
+</body>
+
+</html>
