@@ -6,6 +6,8 @@ interface StudentDistributionProps {
   className?: string;
 }
 
+const COLORS = ["#3949AB", "#F57C00", "#48BB78", "#E91E63", "#009688", "#9C27B0"];
+
 export function StudentDistribution({ className }: StudentDistributionProps) {
   const { data, isLoading, error } = useQuery({
     queryKey: ["/api/dashboard/student-distribution"],
@@ -25,19 +27,29 @@ export function StudentDistribution({ className }: StudentDistributionProps) {
     return (
       <ChartCard title="Student Distribution" className={className}>
         <div className="h-52 w-full flex items-center justify-center text-red-500">
-          Error loading student distribution: {error.message}
+          Error loading student distribution: {(error as Error).message}
         </div>
       </ChartCard>
     );
   }
 
-  const chartData = [
-    { name: "Music Courses", value: data?.music || 0, color: "#3949AB" },
-    { name: "Dance Courses", value: data?.dance || 0, color: "#F57C00" },
-    { name: "Art Courses", value: data?.art || 0, color: "#48BB78" }
-  ];
+  // Transform API response into chartData
+  const chartData = Object.entries(data || {})
+    .filter(([key]) => key !== "TOTAL")
+    .map(([key, value], index) => ({
+      name: `${key.charAt(0).toUpperCase()}${key.slice(1).toLowerCase()} Courses`,
+      value: value as number,
+      color: COLORS[index % COLORS.length],
+      key,
+    }));
 
-  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+  const calculatePercentage = (value: number) => {
+    return data?.TOTAL ? Math.round((value / data.TOTAL) * 100) : 0;
+  };
+
+  const renderCustomizedLabel = ({
+    cx, cy, midAngle, innerRadius, outerRadius, percent
+  }: any) => {
     const RADIAN = Math.PI / 180;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -48,7 +60,7 @@ export function StudentDistribution({ className }: StudentDistributionProps) {
         x={x} 
         y={y} 
         fill="white" 
-        textAnchor={x > cx ? 'start' : 'end'} 
+        textAnchor={x > cx ? "start" : "end"} 
         dominantBaseline="central"
         fontSize={12}
         fontWeight="bold"
@@ -56,10 +68,6 @@ export function StudentDistribution({ className }: StudentDistributionProps) {
         {`${(percent * 100).toFixed(0)}%`}
       </text>
     );
-  };
-
-  const calculatePercentage = (value: number) => {
-    return data?.total ? Math.round((value / data.total) * 100) : 0;
   };
 
   return (
@@ -86,35 +94,22 @@ export function StudentDistribution({ className }: StudentDistributionProps) {
         </ResponsiveContainer>
       </div>
 
-      {/* <div className="absolute inset-0 flex items-center justify-center">
-        <div className="text-center mt-24">
-          <p className="text-3xl font-bold text-neutral-900">{data?.total || 0}</p>
-          <p className="text-xs text-neutral-500">Total Students</p>
-        </div>
-      </div> */}
-      
+      {/* Legend */}
       <div className="space-y-3 mt-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <div className="h-3 w-3 rounded-full bg-primary mr-2"></div>
-            <span className="text-sm text-neutral-600">Music Courses</span>
+        {chartData.map((entry, index) => (
+          <div key={entry.key} className="flex items-center justify-between">
+            <div className="flex items-center">
+              <div
+                className="h-3 w-3 rounded-full mr-2"
+                style={{ backgroundColor: entry.color }}
+              ></div>
+              <span className="text-sm text-neutral-600">{entry.name}</span>
+            </div>
+            <span className="text-sm font-medium">
+              {calculatePercentage(entry.value)}% ({entry.value})
+            </span>
           </div>
-          <span className="text-sm font-medium">{calculatePercentage(data?.music || 0)}% ({data?.music || 0})</span>
-        </div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <div className="h-3 w-3 rounded-full bg-secondary mr-2"></div>
-            <span className="text-sm text-neutral-600">Dance Courses</span>
-          </div>
-          <span className="text-sm font-medium">{calculatePercentage(data?.dance || 0)}% ({data?.dance || 0})</span>
-        </div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <div className="h-3 w-3 rounded-full bg-green-500 mr-2"></div>
-            <span className="text-sm text-neutral-600">Art Courses</span>
-          </div>
-          <span className="text-sm font-medium">{calculatePercentage(data?.art || 0)}% ({data?.art || 0})</span>
-        </div>
+        ))}
       </div>
     </ChartCard>
   );

@@ -65,9 +65,9 @@ export function LocationSelector({
   return (
     <div className="flex justify-between items-center mb-6">
       <div className="flex items-center space-x-2">
-        <label className="text-sm font-medium text-neutral-700">Location:</label>
+        {/* <label className="text-sm font-medium text-neutral-700">Location:</label> */}
         <div className="relative">
-          <Select value={location} onValueChange={handleLocationChange}>
+          {/* <Select value={location} onValueChange={handleLocationChange}>
             <SelectTrigger className="pl-3 pr-8 py-2 text-sm">
               <SelectValue placeholder="Select location" />
             </SelectTrigger>
@@ -77,7 +77,7 @@ export function LocationSelector({
               <SelectItem value="north">Burjuman</SelectItem>
               <SelectItem value="south">International City</SelectItem>
               </SelectContent>
-          </Select>
+          </Select> */}
         </div>
       </div>
       
@@ -99,14 +99,14 @@ export function LocationSelector({
           </PopoverContent>
         </Popover>
         
-        <Button 
+        {/* <Button 
           className="bg-primary hover:bg-primary/90"
           size="sm"
           onClick={handleExport}
         >
           <Download className="h-4 w-4 mr-2" />
           Export
-        </Button>
+        </Button> */}
       </div>
     </div>
   );

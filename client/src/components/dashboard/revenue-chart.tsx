@@ -17,8 +17,13 @@ export function RevenueChart({ className }: RevenueChartProps) {
   const [period, setPeriod] = useState("12months");
   
   const { data, isLoading, error } = useQuery({
-    queryKey: ["/api/dashboard/revenue-data"],
-  });
+  queryKey: ["/api/dashboard/revenue-data", period],
+  queryFn: async () => {
+    const res = await fetch(`/api/dashboard/revenue-data?period=${period}`);
+    return res.json();
+  },
+});
+
 
   if (isLoading) {
     return (

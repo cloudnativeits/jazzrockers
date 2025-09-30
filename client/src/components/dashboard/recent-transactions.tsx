@@ -22,55 +22,54 @@ interface Transaction {
   status: string;
 }
 
+interface Student {
+  id: number;
+  studentId: string;
+  firstName: string;
+  lastName: string;
+  // ... other student fields
+}
+
+interface Payment {
+  id: number;
+  paymentId: string;
+  studentId: number;
+  amount: number;
+  paymentDate: string;
+  status: string;
+  paymentMethod?: string;
+  remarks?: string;
+}
+
 export function RecentTransactions({ className }: RecentTransactionsProps) {
   const [page, setPage] = useState(1);
   
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["/api/dashboard/recent-transactions"],
+  // Fetch payments and students data
+  const { data: payments = [] } = useQuery<Payment[]>({
+    queryKey: ["/api/studentPayments"],
   });
 
-  if (isLoading) {
-    return (
-      <ChartCard 
-        title="Recent Transactions" 
-        actions={
-          <Button variant="link" size="sm">View All</Button>
-        }
-        className={className}
-      >
-        <div className="animate-pulse space-y-4">
-          {Array(5).fill(0).map((_, i) => (
-            <div key={i} className="flex items-center justify-between py-3">
-              <div className="flex items-center">
-                <div className="h-8 w-8 bg-neutral-200 rounded-full mr-3"></div>
-                <div className="space-y-2">
-                  <div className="h-4 w-24 bg-neutral-200 rounded"></div>
-                  <div className="h-3 w-16 bg-neutral-200 rounded"></div>
-                </div>
-              </div>
-              <div className="h-4 w-16 bg-neutral-200 rounded"></div>
-            </div>
-          ))}
-        </div>
-      </ChartCard>
-    );
-  }
+  const { data: students = [] } = useQuery<Student[]>({
+    queryKey: ["/api/students"],
+  });
 
-  if (error) {
-    return (
-      <ChartCard 
-        title="Recent Transactions" 
-        actions={
-          <Button variant="link" size="sm">View All</Button>
-        }
-        className={className}
-      >
-        <div className="p-4 text-red-500">
-          Error loading transactions: {error.message}
-        </div>
-      </ChartCard>
-    );
-  }
+  // Transform payments data into transactions
+  const transactions: Transaction[] = payments
+    .sort((a, b) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime())
+    .slice(0, 10)
+    .map(payment => {
+      const student = students.find(s => s.id === payment.studentId);
+      
+      return {
+        studentId: student?.studentId || 'N/A',
+        studentName: student ? `${student.firstName} ${student.lastName}` : 'Unknown Student',
+        invoiceId: payment.paymentId, // Using paymentId as invoiceId for display
+        courseName: 'General Payment', // You might want to get this from invoices
+        paymentDate: payment.paymentDate,
+        amount: Number(payment.amount),
+        status: payment.status
+      };
+    });
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status.toLowerCase()) {
@@ -80,6 +79,8 @@ export function RecentTransactions({ className }: RecentTransactionsProps) {
         return { variant: "warning", label: "Pending" };
       case 'failed':
         return { variant: "destructive", label: "Failed" };
+      case 'partially_paid':
+        return { variant: "outline", label: "Partially Paid" };
       default:
         return { variant: "outline", label: status };
     }
@@ -115,7 +116,7 @@ export function RecentTransactions({ className }: RecentTransactionsProps) {
           <thead>
             <tr>
               <th className="px-4 py-3 bg-neutral-50 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Student</th>
-              <th className="px-4 py-3 bg-neutral-50 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Invoice ID</th>
+              <th className="px-4 py-3 bg-neutral-50 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Payment ID</th>
               <th className="px-4 py-3 bg-neutral-50 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Course</th>
               <th className="px-4 py-3 bg-neutral-50 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Date</th>
               <th className="px-4 py-3 bg-neutral-50 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Amount</th>
@@ -123,7 +124,7 @@ export function RecentTransactions({ className }: RecentTransactionsProps) {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-neutral-200">
-            {data.map((transaction: Transaction, index: number) => (
+            {transactions.map((transaction, index) => (
               <tr key={index} className="hover:bg-neutral-50">
                 <td className="px-4 py-3 whitespace-nowrap">
                   <div className="flex items-center">
@@ -170,7 +171,7 @@ export function RecentTransactions({ className }: RecentTransactionsProps) {
       
       <div className="mt-4 flex justify-between items-center">
         <div className="text-sm text-neutral-500">
-          Showing <span className="font-medium">5</span> of <span className="font-medium">230</span> transactions
+          Showing <span className="font-medium">{transactions.length}</span> recent transactions
         </div>
         
         <div className="flex items-center space-x-2">

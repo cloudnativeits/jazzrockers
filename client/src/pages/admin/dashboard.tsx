@@ -47,11 +47,11 @@ export default function AdminDashboard() {
         breadcrumbs={breadcrumbs}
       />
       
-      <LocationSelector 
+      {/* <LocationSelector 
         onLocationChange={handleLocationChange}
         onDateRangeChange={handleDateRangeChange}
         onExport={handleExport}
-      />
+      /> */}
       
       <StatCards />
       

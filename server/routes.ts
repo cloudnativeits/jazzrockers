@@ -12,7 +12,7 @@ import PDFDocument from 'pdfkit';
 import ExcelJS from 'exceljs';
 import fs from 'fs';
 import path from 'path';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 
 
 dotenv.config();
@@ -156,79 +156,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/dashboard/revenue-data", isAuthenticated, async (req, res) => {
-    try {
-      const payments = await storage.getPayments();
-      const revenueData = [
-        { month: "Jul", revenue: 823450 },
-        { month: "Aug", revenue: 756230 },
-        { month: "Sep", revenue: 845120 },
-        { month: "Oct", revenue: 901540 },
-        { month: "Nov", revenue: 948920 },
-        { month: "Dec", revenue: 875630 },
-        { month: "Jan", revenue: 856740 },
-        { month: "Feb", revenue: 923450 },
-        { month: "Mar", revenue: 978650 },
-        { month: "Apr", revenue: 1025480 },
-        { month: "May", revenue: 987650 },
-        { month: "Jun", revenue: 923450 },
-      ];
+app.get("/api/dashboard/revenue-data", isAuthenticated, async (req, res) => {
+  try {
+    const { period } = req.query; // e.g., "30days", "90days", "12months", "ytd"
+    let invoices = await storage.getInvoices();
 
-      res.json(revenueData);
+    // Only consider paid and partially_paid invoices
+    invoices = invoices.filter(
+      (inv) => inv.status === "paid" || inv.status === "partially_paid"
+    );
+
+    const today = new Date();
+    let filteredInvoices = invoices;
+
+    if (period === "30days") {
+      const fromDate = new Date();
+      fromDate.setDate(today.getDate() - 30);
+      filteredInvoices = invoices.filter(inv => new Date(inv.issueDate) >= fromDate);
+    } else if (period === "90days") {
+      const fromDate = new Date();
+      fromDate.setDate(today.getDate() - 90);
+      filteredInvoices = invoices.filter(inv => new Date(inv.issueDate) >= fromDate);
+    } else if (period === "ytd") {
+      const startOfYear = new Date(today.getFullYear(), 0, 1);
+      filteredInvoices = invoices.filter(inv => new Date(inv.issueDate) >= startOfYear);
+    }
+
+    // Initialize months or days
+    let revenueData: any[] = [];
+    if (period === "30days" || period === "90days") {
+      // Create day labels for last N days
+      const days = period === "30days" ? 30 : 90;
+      for (let i = 0; i < days; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() - i);
+        revenueData.unshift({ date: date.toISOString().slice(0, 10), revenue: 0 });
+      }
+      filteredInvoices.forEach(inv => {
+        const index = revenueData.findIndex(d => d.date === inv.issueDate?.slice(0, 10));
+        if (index !== -1) {
+          revenueData[index].revenue += inv.status === "partially_paid" ? Number(inv.amountPaid) : Number(inv.totalAmount);
+        }
+      });
+    } else {
+      // Default: 12 months
+      const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      revenueData = months.map(m => ({ month: m, revenue: 0 }));
+      filteredInvoices.forEach(inv => {
+        const date = new Date(inv.issueDate as unknown as string);
+        const monthIndex = date.getMonth();
+        const revenue = inv.status === "partially_paid" ? Number(inv.amountPaid) : Number(inv.totalAmount);
+        revenueData[monthIndex].revenue += revenue;
+      });
+    }
+
+    res.json(revenueData);
+
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+
+  app.get(
+  "/api/dashboard/student-distribution",
+  isAuthenticated,
+  async (req, res) => {
+    try {
+      const courses = await storage.getCourses();
+      const enrollments = await storage.getEnrollments();
+
+      // Initialize distribution object dynamically
+      const distribution: Record<string, number> = {};
+      let total = 0;
+
+      for (const enrollment of enrollments) {
+        const batch = await storage.getBatch(enrollment.batchId);
+        if (batch) {
+          const course = courses.find((c) => c.id === batch.courseId);
+          if (course?.category) {
+            const category = course.category.toUpperCase(); // keep consistent
+            distribution[category] = (distribution[category] || 0) + 1;
+            total++;
+          }
+        }
+      }
+
+      // Add total count
+      distribution["TOTAL"] = total;
+
+      res.json(distribution);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
-  });
-
-  app.get(
-    "/api/dashboard/student-distribution",
-    isAuthenticated,
-    async (req, res) => {
-      try {
-        const courseCategories = ["music", "dance", "art"];
-        const courses = await storage.getCourses();
-        const enrollments = await storage.getEnrollments();
-
-        const distribution = {
-          music: 0,
-          dance: 0,
-          art: 0,
-          total: 0,
-        };
-
-        // Get course IDs for each category
-        const musicCourseIds = courses
-          .filter((course) => course.category === "music")
-          .map((course) => course.id);
-        const danceCourseIds = courses
-          .filter((course) => course.category === "dance")
-          .map((course) => course.id);
-        const artCourseIds = courses
-          .filter((course) => course.category === "art")
-          .map((course) => course.id);
-
-        // Count students in each category
-        for (const enrollment of enrollments) {
-          const batch = await storage.getBatch(enrollment.batchId);
-          if (batch) {
-            if (musicCourseIds.includes(batch.courseId)) {
-              distribution.music++;
-            } else if (danceCourseIds.includes(batch.courseId)) {
-              distribution.dance++;
-            } else if (artCourseIds.includes(batch.courseId)) {
-              distribution.art++;
-            }
-            distribution.total++;
-          }
-        }
-
-        res.json(distribution);
-      } catch (error: any) {
-        res.status(500).json({ message: error.message });
-      }
-    }
-  );
-
+  }
+);
   app.get(
     "/api/dashboard/recent-transactions",
     isAuthenticated,
@@ -283,58 +305,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
   );
 
   app.get("/api/dashboard/today-classes", isAuthenticated, async (req, res) => {
-    try {
-      const batches = await storage.getBatches(); // batches include schedules
-      const today = new Date();
-      const dayNames = [
-        "Sunday",
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-      ];
-      const todayDay = dayNames[today.getDay()];
+  try {
+    const batches = await storage.getBatches();
+    const today = new Date();
+    const dayNames = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    const todayDay = dayNames[today.getDay()];
 
-      const todayClasses = [];
+    const todayClasses = [];
 
-      for (const batch of batches) {
-        if (batch.status !== "active") continue;
+    for (const batch of batches) {
+      if (batch.status !== "active") continue;
 
-        // Filter schedules for today
-        const todaySchedules = batch.schedules.filter(schedule => schedule.day === todayDay);
+      const todaySchedules = batch.schedules.filter(
+        (schedule) => schedule.day?.trim().toLowerCase() === todayDay.toLowerCase()
+      );
 
+      for (const schedule of todaySchedules) {
+        const course = await storage.getCourse(batch.courseId);
 
-        for (const schedule of todaySchedules) {
-          const course = await storage.getCourse(batch.courseId);
-          const teacher = await storage.getEmployeeByEmployeeId(
-            "EMP00" + batch.teacherId
-          );
-          const enrollments = await storage.getEnrollmentsByBatch(batch.id);
+        
+        // Try fetching teacher without concatenating "EMP00"
+        let teacher = await storage.getEmployee(batch.teacherId);
 
-          if (course && teacher) {
-            const user = await storage.getUser(teacher.userId);
-            todayClasses.push({
-              batchName: batch.name,
-              courseCategory: course.category,
-              startTime: schedule.startTime,
-              day: schedule.day,
-              endTime: schedule.endTime,
-              location: batch.roomNumber,
-              teacherName: user ? user.fullName : "Unknown Teacher",
-              studentCount: enrollments.length,
-            });
-          }
+        // If that fails, try with "EMP00" prefix
+        if (!teacher) {
+          teacher = await storage.getEmployeeByEmployeeId("EMP00" + batch.teacherId);
+        }
+
+        const enrollments = await storage.getEnrollmentsByBatch(batch.id);
+
+        if (course && teacher) {
+          const user = await storage.getUser(teacher.userId);
+          todayClasses.push({
+            batchName: batch.name,
+            courseCategory: course.category,
+            startTime: schedule.startTime,
+            day: schedule.day,
+            endTime: schedule.endTime,
+            location: batch.roomNumber,
+            teacherName: user ? user.fullName : "Unknown Teacher",
+            studentCount: enrollments.length,
+          });
+        } else {
+          // FIX: Log when teacher or course is not found
+          console.log('Missing data for batch:', batch.id, 'course:', !!course, 'teacher:', !!teacher);
         }
       }
-
-      res.json(todayClasses);
-    } catch (error) {
-      console.error("Error fetching today's classes:", error);
-      res.status(500).json({ error: "Failed to fetch today's classes" });
     }
-  });
+    
+    console.log(todayClasses, 'Final today classes');
+
+    res.json(todayClasses);
+  } catch (error) {
+    console.error("Error fetching today's classes:", error);
+    res.status(500).json({ error: "Failed to fetch today's classes" });
+  }
+});
 
   // Courses routes
   app.get("/api/courses", hasPermission("courses", "view"), async (req, res) => {

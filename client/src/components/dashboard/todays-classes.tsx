@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Clock, MapPin } from "lucide-react";
-import { format } from "date-fns";
 
 interface TodaysClassesProps {
   className?: string;
@@ -78,7 +77,7 @@ export function TodaysClasses({ className }: TodaysClassesProps) {
   const getCategoryBadgeColor = (category: string) => {
     switch (category.toLowerCase()) {
       case 'music':
-        return category === 'music' ? "bg-blue-100 text-blue-800" : "bg-blue-100 text-blue-800";
+        return "bg-blue-100 text-blue-800";
       case 'dance':
         return "bg-orange-100 text-orange-800";
       case 'art':
@@ -89,8 +88,16 @@ export function TodaysClasses({ className }: TodaysClassesProps) {
   };
 
   const formatTime = (timeString: string) => {
-    const date = new Date(timeString);
-    return format(date, 'h:mm a');
+    // timeString is in format "17:00:00" or "09:00:00"
+    const [hours, minutes] = timeString.split(':');
+    const hour = parseInt(hours, 10);
+    const minute = parseInt(minutes, 10);
+    
+    // Convert to 12-hour format
+    const period = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    
+    return `${hour12}:${minutes.padStart(2, '0')} ${period}`;
   };
 
   const getTeacherInitials = (name: string): string => {
@@ -110,40 +117,46 @@ export function TodaysClasses({ className }: TodaysClassesProps) {
       className={className}
     >
       <div className="space-y-4">
-        {data && data.map((classInfo: ClassInfo, index: number) => (
-          <div key={index} className="p-4 border border-neutral-200 rounded-md hover:border-neutral-300 transition-colors">
-            <div className="flex justify-between items-start mb-2">
-              <h4 className="font-semibold text-neutral-900">{classInfo.batchName}</h4>
-              <Badge 
-                variant="outline"
-                className={getCategoryBadgeColor(classInfo.courseCategory)}
-              >
-                {classInfo.courseCategory}
-              </Badge>
-            </div>
-            <div className="flex justify-between text-sm mb-2">
-              <div className="text-neutral-600">
-                <Clock className="h-4 w-4 inline mr-1" />
-                {formatTime(classInfo.startTime)} - {formatTime(classInfo.endTime)}
+        {data && data.length > 0 ? (
+          data.map((classInfo: ClassInfo, index: number) => (
+            <div key={index} className="p-4 border border-neutral-200 rounded-md hover:border-neutral-300 transition-colors">
+              <div className="flex justify-between items-start mb-2">
+                <h4 className="font-semibold text-neutral-900">{classInfo.batchName}</h4>
+                <Badge 
+                  variant="outline"
+                  className={getCategoryBadgeColor(classInfo.courseCategory)}
+                >
+                  {classInfo.courseCategory}
+                </Badge>
               </div>
-              <div className="text-neutral-600">
-                <MapPin className="h-4 w-4 inline mr-1" />
-                {classInfo.location}
+              <div className="flex justify-between text-sm mb-2">
+                <div className="text-neutral-600">
+                  <Clock className="h-4 w-4 inline mr-1" />
+                  {formatTime(classInfo.startTime)} - {formatTime(classInfo.endTime)}
+                </div>
+                <div className="text-neutral-600">
+                  <MapPin className="h-4 w-4 inline mr-1" />
+                  {classInfo.location}
+                </div>
+              </div>
+              <div className="flex justify-between items-center">
+                <div className="flex items-center">
+                  <Avatar className="h-6 w-6 rounded-full bg-neutral-200 mr-2">
+                    <AvatarFallback className="text-neutral-600 text-xs">
+                      {getTeacherInitials(classInfo.teacherName)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm text-neutral-700">{classInfo.teacherName}</span>
+                </div>
+                <span className="text-xs text-neutral-500">{classInfo.studentCount} students</span>
               </div>
             </div>
-            <div className="flex justify-between items-center">
-              <div className="flex items-center">
-                <Avatar className="h-6 w-6 rounded-full bg-neutral-200 mr-2">
-                  <AvatarFallback className="text-neutral-600 text-xs">
-                    {getTeacherInitials(classInfo.teacherName)}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="text-sm text-neutral-700">{classInfo.teacherName}</span>
-              </div>
-              <span className="text-xs text-neutral-500">{classInfo.studentCount} students</span>
-            </div>
+          ))
+        ) : (
+          <div className="p-8 text-center text-neutral-500">
+            No classes scheduled for today
           </div>
-        ))}
+        )}
       </div>
     </ChartCard>
   );

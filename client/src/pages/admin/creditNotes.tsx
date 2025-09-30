@@ -245,30 +245,30 @@ export default function CreditNotes() {
                 );
             },
         },
-        {
-            id: "actions",
-            header: "Actions",
-            cell: ({ row }) => {
-                const payroll = row.original;
+        // {
+        //     id: "actions",
+        //     header: "Actions",
+        //     cell: ({ row }) => {
+        //         const payroll = row.original;
 
-                return (
-                    <div className="flex space-x-2">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleViewPayroll(payroll)}
-                        >
-                            <Eye className="h-4 w-4" />
-                        </Button>
-                        {payroll.status === "processed" && (
-                            <Button variant="ghost" size="icon" className="text-green-600">
-                                <Check className="h-4 w-4" />
-                            </Button>
-                        )}
-                    </div>
-                );
-            },
-        },
+        //         return (
+        //             <div className="flex space-x-2">
+        //                 <Button
+        //                     variant="ghost"
+        //                     size="icon"
+        //                     onClick={() => handleViewPayroll(payroll)}
+        //                 >
+        //                     <Eye className="h-4 w-4" />
+        //                 </Button>
+        //                 {payroll.status === "processed" && (
+        //                     <Button variant="ghost" size="icon" className="text-green-600">
+        //                         <Check className="h-4 w-4" />
+        //                     </Button>
+        //                 )}
+        //             </div>
+        //         );
+        //     },
+        // },
     ];
 
     const onSubmitCreditNoteForm = async (data: CreditNoteFormValues) => {
